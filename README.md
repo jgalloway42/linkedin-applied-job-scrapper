@@ -10,11 +10,12 @@ A Python script to extract your LinkedIn job applications and save them in a str
 
 ## Features
 
-✅ **Date Range Filtering**: Extract only applications within a specific date range  
-✅ **Automatic File Naming**: Generates files as `Week_Ending_YYYY_MM_DD.txt`  
-✅ **Batch Processing**: Generate multiple weekly reports in one session  
-✅ **Zero-Padded Dates**: Files sort correctly (e.g., `Week_Ending_2026_01_31.txt`)  
-✅ **Manual Login**: You stay in control of your credentials  
+✅ **Date Range Filtering**: Extract only applications within a specific date range
+✅ **Automatic File Naming**: Generates files as `Week_Ending_YYYY_MM_DD.txt`
+✅ **Smart Pagination**: Automatically pages through LinkedIn results until reaching older jobs
+✅ **Zero-Padded Dates**: Files sort correctly (e.g., `Week_Ending_2026_01_31.txt`)
+✅ **Manual Login**: You stay in control of your credentials
+✅ **Clean Output**: Removes LinkedIn badges and formatting artifacts  
 
 ## Prerequisites
 
@@ -52,31 +53,6 @@ python linkedin_scraper.py --start-date 2026-01-25
 python linkedin_scraper.py
 ```
 
-### Batch Processing - Multiple Weeks
-
-For generating multiple weekly reports for unemployment claims:
-
-```bash
-python batch_weekly_reports.py
-```
-
-This interactive script will:
-1. Ask for the start date of your first week
-2. Ask how many weeks to process
-3. Show you all the week ranges it will create
-4. Process them all in one browser session (you only log in once!)
-
-**Example workflow:**
-```
-Enter the start date of the first week (YYYY-MM-DD): 2026-01-01
-How many weeks do you want to process? 4
-
-Week 1: 2026-01-01 to 2026-01-07 → Week_Ending_2026_01_07.txt
-Week 2: 2026-01-08 to 2026-01-14 → Week_Ending_2026_01_14.txt
-Week 3: 2026-01-15 to 2026-01-21 → Week_Ending_2026_01_21.txt
-Week 4: 2026-01-22 to 2026-01-28 → Week_Ending_2026_01_28.txt
-```
-
 ### How It Works
 
 1. **Login Once:**
@@ -85,7 +61,8 @@ Week 4: 2026-01-22 to 2026-01-28 → Week_Ending_2026_01_28.txt
    - The script continues automatically after login
 
 2. **Automatic Extraction:**
-   - Scrolls through all your applied jobs
+   - Intelligently pages through LinkedIn results
+   - Stops automatically when reaching jobs older than your date range
    - Filters applications by date range
    - Shows which jobs match your criteria
 
@@ -114,17 +91,11 @@ python linkedin_scraper.py --start-date 2026-02-03
 ```
 Output: `Week_Ending_2026_02_09.txt` (assuming today is Feb 9)
 
-### Example 3: Generate 4 Weeks of Reports
+### Example 3: Last 7 Days (Default)
 ```bash
-python batch_weekly_reports.py
-# Enter start date: 2026-01-01
-# Enter number of weeks: 4
+python linkedin_scraper.py
 ```
-Outputs:
-- `Week_Ending_2026_01_07.txt`
-- `Week_Ending_2026_01_14.txt`
-- `Week_Ending_2026_01_21.txt`
-- `Week_Ending_2026_01_28.txt`
+Output: `Week_Ending_YYYY_MM_DD.txt` (using today as end date)
 
 ## File Naming Convention
 
@@ -207,7 +178,8 @@ pip install --upgrade webdriver-manager selenium
 | `python linkedin_scraper.py` | Last 7 days (default) |
 | `--start-date YYYY-MM-DD` | Set start date |
 | `--end-date YYYY-MM-DD` | Set end date (defaults to today) |
-| `python batch_weekly_reports.py` | Interactive batch processing |
+| `--debug` | Enable detailed logging |
+| `--test-parsing` | Test date parsing with sample formats |
 
 ### File Naming
 
@@ -223,11 +195,12 @@ pip install --upgrade webdriver-manager selenium
 
 ## Tips for Unemployment Claims
 
-1. **Weekly Reports:** Use the batch processor to generate one file per week
+1. **Weekly Reports:** Run the scraper with weekly date ranges (e.g., Sunday to Saturday)
 2. **Consistent Naming:** The zero-padded format ensures files sort chronologically
 3. **Verification:** Cross-check with LinkedIn emails for precise application dates
 4. **Keep Records:** Save these files as proof of job search activity
 5. **Regular Updates:** Run weekly to maintain current records
+6. **Efficient Processing:** The scraper automatically stops when reaching older jobs
 
 ## Privacy & Security
 

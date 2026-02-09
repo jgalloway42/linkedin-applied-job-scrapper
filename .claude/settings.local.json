@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python linkedin_scraper.py:*)",
+      "Bash(pip install:*)",
+      "Bash(conda activate:*)",
+      "Bash(conda run -n LISCRAPE python linkedin_scraper.py:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
