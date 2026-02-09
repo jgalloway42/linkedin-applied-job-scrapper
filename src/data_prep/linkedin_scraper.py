@@ -3,8 +3,13 @@ LinkedIn Job Application Scraper with Date Range Filtering
 Extracts jobs you've applied to from LinkedIn and saves them with proper naming convention.
 
 Usage:
+    conda activate LISCRAPE
     python linkedin_scraper.py --start-date 2026-01-25 --end-date 2026-01-31
     python linkedin_scraper.py --start-date 2026-01-25  # End date defaults to today
+
+Requirements:
+    - Conda environment: LISCRAPE
+    - selenium, Chrome WebDriver
 """
 
 from selenium import webdriver
@@ -47,8 +52,14 @@ class LinkedInJobScraper:
             self.end_date = datetime.now()  # Default to today
             
         # Generate output filename using the end date (latest day of range)
-        self.output_file = f"Week_Ending_{self.end_date.strftime('%Y_%m_%d')}.txt"
-        
+        # Create reports directory in project root if it doesn't exist
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        reports_dir = os.path.join(project_root, "reports")
+        os.makedirs(reports_dir, exist_ok=True)
+
+        filename = f"Week_Ending_{self.end_date.strftime('%Y_%m_%d')}.txt"
+        self.output_file = os.path.join(reports_dir, filename)
+
         print(f"\nDate Range: {self.start_date.strftime('%Y-%m-%d')} to {self.end_date.strftime('%Y-%m-%d')}")
         print(f"Output File: {self.output_file}")
         
@@ -905,7 +916,28 @@ def test_date_parsing():
     print("="*60)
 
 
+def check_conda_environment():
+    """Check if running in the correct conda environment"""
+    conda_env = os.environ.get('CONDA_DEFAULT_ENV', None)
+
+    if conda_env != 'LISCRAPE':
+        print("\n" + "!"*60)
+        print("WARNING: Not running in LISCRAPE conda environment")
+        print("!"*60)
+        print(f"Current environment: {conda_env if conda_env else 'None (base or no conda)'}")
+        print("\nPlease activate the LISCRAPE environment:")
+        print("  conda activate LISCRAPE")
+        print("\nContinuing anyway, but you may encounter missing dependencies...")
+        print("!"*60 + "\n")
+        input("Press Enter to continue or Ctrl+C to exit...")
+    else:
+        print(f"✓ Running in conda environment: {conda_env}\n")
+
+
 def main():
+    # Check conda environment first
+    check_conda_environment()
+
     parser = argparse.ArgumentParser(
         description='Scrape LinkedIn job applications within a date range',
         formatter_class=argparse.RawDescriptionHelpFormatter,
