@@ -2,3 +2,5 @@ seaborn
 plotly
 scikit-learn
 statsmodels
+selenium==4.16.0
+webdriver-manager==4.0.1
