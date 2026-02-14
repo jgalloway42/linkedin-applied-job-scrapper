@@ -118,9 +118,9 @@ def generate_cumulative_chart(reports_dir, output_dir):
     ax.set_ylabel('Number of Job Applications', fontsize=12, fontweight='bold')
     ax.set_title('LinkedIn Job Applications by Week', fontsize=14, fontweight='bold', pad=20)
 
-    # Format x-axis dates
+    # Format x-axis dates - place ticks exactly on the week-ending dates from filenames
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+    ax.set_xticks(weeks)
     plt.xticks(rotation=45, ha='right')
 
     # Add value labels on top of bars
