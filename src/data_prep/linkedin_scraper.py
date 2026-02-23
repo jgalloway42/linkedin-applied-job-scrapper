@@ -36,20 +36,20 @@ class LinkedInJobScraper:
         self.driver = None
         self.debug_mode = debug_mode
         
-        # Parse dates
-        if isinstance(start_date, str):
-            self.start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        elif isinstance(start_date, datetime):
-            self.start_date = start_date
-        else:
-            self.start_date = datetime.now() - timedelta(days=7)  # Default to last week
-            
+        # Parse end_date first so start_date can default relative to it
         if isinstance(end_date, str):
             self.end_date = datetime.strptime(end_date, "%Y-%m-%d")
         elif isinstance(end_date, datetime):
             self.end_date = end_date
         else:
-            self.end_date = datetime.now()  # Default to today
+            self.end_date = datetime.now()
+
+        if isinstance(start_date, str):
+            self.start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        elif isinstance(start_date, datetime):
+            self.start_date = start_date
+        else:
+            self.start_date = self.end_date - timedelta(days=6)  # Default to 7-day window ending on end_date
             
         # Generate output filename using the end date (latest day of range)
         # Create reports directory in project root if it doesn't exist

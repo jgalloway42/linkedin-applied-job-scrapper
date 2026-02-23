@@ -43,12 +43,17 @@ A Python script to extract your LinkedIn job applications and save them in a str
 python linkedin_scraper.py --start-date 2026-01-25 --end-date 2026-01-31
 ```
 
-**End date defaults to today:**
+**End date only — start date auto-calculated as 7 days prior (inclusive):**
+```bash
+python linkedin_scraper.py --end-date 2026-02-21
+```
+
+**Start date only — end date defaults to today:**
 ```bash
 python linkedin_scraper.py --start-date 2026-01-25
 ```
 
-**No arguments (defaults to last 7 days):**
+**No arguments (defaults to 7 days ending today):**
 ```bash
 python linkedin_scraper.py
 ```
@@ -85,11 +90,11 @@ python linkedin_scraper.py --start-date 2026-01-25 --end-date 2026-01-31
 ```
 Output: `Week_Ending_2026_01_31.txt`
 
-### Example 2: Specific Week Ending Today
+### Example 2: Specific Week by End Date
 ```bash
-python linkedin_scraper.py --start-date 2026-02-03
+python linkedin_scraper.py --end-date 2026-02-21
 ```
-Output: `Week_Ending_2026_02_09.txt` (assuming today is Feb 9)
+Output: `Week_Ending_2026_02_21.txt` (scrapes Feb 15–Feb 21 inclusive)
 
 ### Example 3: Last 7 Days (Default)
 ```bash
@@ -175,9 +180,9 @@ pip install --upgrade webdriver-manager selenium
 
 | Command | Description |
 |---------|-------------|
-| `python linkedin_scraper.py` | Last 7 days (default) |
-| `--start-date YYYY-MM-DD` | Set start date |
-| `--end-date YYYY-MM-DD` | Set end date (defaults to today) |
+| `python linkedin_scraper.py` | 7 days ending today (default) |
+| `--end-date YYYY-MM-DD` | 7-day window ending on this date (start auto-calculated) |
+| `--start-date YYYY-MM-DD` | Set start date (end defaults to today) |
 | `--debug` | Enable detailed logging |
 | `--test-parsing` | Test date parsing with sample formats |
 
