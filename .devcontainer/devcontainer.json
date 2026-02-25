@@ -4,7 +4,14 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "postCreateCommand": "pip install -r requirements.txt",
+  "postCreateCommand": "pip install -r requirements.txt && Xvfb :99 -screen 0 1920x1080x24 & x11vnc -display :99 -forever -nopw -quiet & websockify --web /usr/share/novnc 6080 localhost:5900 &",
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": {
+      "label": "Chrome Display (noVNC)",
+      "onAutoForward": "notify"
+    }
+  },
   "customizations": {
     "vscode": {
       "extensions": ["ms-python.python", "ms-python.pylint", "ms-python.black-formatter"]
