@@ -3,7 +3,7 @@ FROM python:3.11-slim
 # Install Google Chrome (modern key method — apt-key removed in Debian 13)
 # Also install Xvfb + noVNC so Chrome is viewable in Codespaces via port forwarding
 RUN apt-get update && apt-get install -y wget gnupg ca-certificates \
-       xvfb x11vnc novnc websockify \
+       make xvfb x11vnc novnc websockify \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub \
        | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
