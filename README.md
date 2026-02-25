@@ -1,272 +1,206 @@
 # LinkedIn Job Application Scraper
 
-A Python script to extract your LinkedIn job applications and save them in a structured format for unemployment records with automatic date range filtering and weekly file naming.
+Extract and track your LinkedIn job applications for unemployment records and personal tracking — with automatic date range filtering, smart pagination, and weekly report generation.
 
-## ⚠️ Important Disclaimers
+## ⚠️ Disclaimers
 
-1. **LinkedIn Terms of Service**: Automated scraping may violate LinkedIn's ToS. Use this tool responsibly and only for your personal records.
-2. **For Personal Use Only**: This tool is designed to help you track your own job applications.
-3. **No Guarantees**: LinkedIn frequently updates their website structure, which may break this scraper.
+1. **LinkedIn Terms of Service**: Automated scraping may violate LinkedIn's ToS. Use responsibly and only for your own personal records.
+2. **For Personal Use Only**: This tool reads your own application history — nothing else.
+3. **No Guarantees**: LinkedIn frequently updates their site structure, which may break selectors.
+
+---
 
 ## Features
 
-✅ **Date Range Filtering**: Extract only applications within a specific date range
-✅ **Automatic File Naming**: Generates files as `Week_Ending_YYYY_MM_DD.txt`
-✅ **Smart Pagination**: Automatically pages through LinkedIn results until reaching older jobs
-✅ **Zero-Padded Dates**: Files sort correctly (e.g., `Week_Ending_2026_01_31.txt`)
-✅ **Manual Login**: You stay in control of your credentials
-✅ **Clean Output**: Removes LinkedIn badges and formatting artifacts  
+- **Date Range Filtering** — extract only applications within a specific window
+- **Smart Pagination** — stops automatically when it reaches jobs older than your range
+- **Manual Login** — you enter credentials yourself; nothing is stored
+- **Weekly Reports** — output as `Week_Ending_YYYY_MM_DD.txt` with zero-padded dates for correct sorting
+- **Chart Generation** — cumulative bar chart across all weeks via `make report`
+- **CI/CD Ready** — GitHub Actions lint + test on every push; Docker image auto-published to GHCR
 
-## Prerequisites
+---
 
-- Python 3.7 or higher
-- Google Chrome browser installed
-- ChromeDriver (will be installed automatically via webdriver-manager)
+## Getting Started
 
-## Installation
+Choose one of three options:
 
-1. **Install Python dependencies:**
+### Option 1: GitHub Codespaces (recommended — no local setup)
+
+1. Click **Code → Codespaces → Create codespace on main** on the GitHub repo page
+2. Wait for the container to build (~3–5 min first time; Chrome is pre-installed)
+3. Open the terminal and run:
    ```bash
-   make install
+   make scrape ARGS="--start-date 2026-02-17 --end-date 2026-02-23"
    ```
 
-2. **Verify Chrome is installed:**
-   - The script uses Chrome WebDriver
-   - Make sure Google Chrome is installed on your system
-   - Or use the provided Docker image: `make build`
+Free tier: 60 hours/month on personal GitHub accounts.
+
+### Option 2: Docker (local)
+
+```bash
+make build
+make scrape ARGS="--start-date 2026-02-17 --end-date 2026-02-23"
+make report
+```
+
+Requires Docker Desktop and, on Linux/Mac, an X11 display for the Chrome window.
+
+### Option 3: Local Python
+
+**Prerequisites:** Python 3.11+, Google Chrome installed
+
+```bash
+make install
+make scrape ARGS="--start-date 2026-02-17 --end-date 2026-02-23"
+make report
+```
+
+---
 
 ## Usage
 
-### Basic Usage - Single Week
+### Scrape Applications
 
-**With specific date range:**
 ```bash
+# Specific date range
 make scrape ARGS="--start-date 2026-01-25 --end-date 2026-01-31"
-```
 
-**End date only — start date auto-calculated as 7 days prior (inclusive):**
-```bash
+# End date only — start auto-calculated as 7 days prior
 make scrape ARGS="--end-date 2026-02-21"
-```
 
-**Start date only — end date defaults to today:**
-```bash
+# Start date only — end defaults to today
 make scrape ARGS="--start-date 2026-01-25"
-```
 
-**No arguments (defaults to 7 days ending today):**
-```bash
+# Last 7 days (default)
 make scrape
 ```
 
-### How It Works
+### Generate Chart
 
-1. **Login Once:**
-   - A Chrome window opens
-   - Log in to LinkedIn manually when prompted
-   - The script continues automatically after login
-
-2. **Automatic Extraction:**
-   - Intelligently pages through LinkedIn results
-   - Stops automatically when reaching jobs older than your date range
-   - Filters applications by date range
-   - Shows which jobs match your criteria
-
-3. **File Generation:**
-   - Creates files named `Week_Ending_YYYY_MM_DD.txt`
-   - Uses the END date of the range for the filename
-   - Files are sorted chronologically when listed
-
-4. **Output Format:**
-   ```
-   2026-01-28, applied to Braze for Senior Forward-Deployed Data Scientist, AI Deployment
-   2026-01-28, applied to The Voleon Group for Data Scientist, Technical Lead (Remote-USA)
-   ```
-
-## Examples
-
-### Example 1: Last Week's Applications
 ```bash
-make scrape ARGS="--start-date 2026-01-25 --end-date 2026-01-31"
+make report
 ```
-Output: `reports/Week_Ending_2026_01_31.txt`
 
-### Example 2: Specific Week by End Date
-```bash
-make scrape ARGS="--end-date 2026-02-21"
-```
-Output: `reports/Week_Ending_2026_02_21.txt` (scrapes Feb 15–Feb 21 inclusive)
+Reads all `reports/Week_Ending_*.txt` files and saves a bar chart to `reports/figures/`.
 
-### Example 3: Last 7 Days (Default)
-```bash
-make scrape
+### How Scraping Works
+
+1. A Chrome window opens — log in to LinkedIn manually when prompted (5-minute timeout)
+2. The scraper pages through your applied jobs, stopping when it reaches jobs older than your start date
+3. Matching applications are saved to `reports/Week_Ending_YYYY_MM_DD.txt`
+
+**Output format:**
 ```
-Output: `reports/Week_Ending_YYYY_MM_DD.txt` (using today as end date)
+2026-01-28, applied to Braze for Senior Forward-Deployed Data Scientist
+2026-01-28, applied to The Voleon Group for Data Scientist, Technical Lead (Remote-USA)
+```
+
+---
+
+## All Make Commands
+
+| Command | Description |
+|---------|-------------|
+| `make install` | Install Python dependencies |
+| `make lint` | Run pylint on all Python files |
+| `make test` | Run pytest with coverage |
+| `make format` | Auto-format with Black |
+| `make refactor` | format + lint |
+| `make build` | Build Docker image locally |
+| `make container-lint` | Lint Dockerfile with hadolint |
+| `make scrape` | Run scraper (last 7 days) |
+| `make scrape ARGS="..."` | Run scraper with date args |
+| `make report` | Generate chart from existing reports |
+| `make all` | install → lint → test → format → deploy |
+
+---
 
 ## File Naming Convention
 
-The script uses **zero-padded dates** for proper sorting:
+Zero-padded dates ensure correct chronological sorting:
 
-✅ **Good** (sorts correctly):
 ```
-Week_Ending_2026_01_07.txt
-Week_Ending_2026_01_14.txt
-Week_Ending_2026_01_21.txt
-Week_Ending_2026_02_04.txt
-```
-
-❌ **Bad** (doesn't sort correctly):
-```
-Week_Ending_2026_1_7.txt
-Week_Ending_2026_1_14.txt
-Week_Ending_2026_1_21.txt
-Week_Ending_2026_2_4.txt
+reports/Week_Ending_2026_01_07.txt   ← sorts correctly
+reports/Week_Ending_2026_01_14.txt
+reports/Week_Ending_2026_01_21.txt
+reports/Week_Ending_2026_02_04.txt
 ```
 
-## Customization
+The **end date** of the scraped range is used for the filename.
 
-### Adjust Scroll Behavior
+---
 
-If you have many applications, edit `linkedin_scraper.py` and increase `max_attempts`:
+## Tips for Unemployment Claims
 
-```python
-max_attempts = 50  # Default is 30, increase if needed
-```
+1. Run weekly with Sunday–Saturday ranges to match typical claim periods
+2. The zero-padded filenames sort chronologically in any file explorer
+3. Cross-check with LinkedIn notification emails for exact application timestamps
+4. Keep the `reports/` folder backed up — it is gitignored and local only
+
+---
 
 ## Troubleshooting
 
-### No Jobs Found in Date Range
+### No jobs found in date range
+- Verify you applied during that period on LinkedIn
+- LinkedIn relative dates ("2 weeks ago") are approximations — try widening the range slightly
+- Run with `--debug` flag for detailed date parsing output: `make scrape ARGS="--debug"`
 
-If the script says "No jobs found in date range":
+### "Could not find job cards" error
+LinkedIn's HTML may have changed. The script tries alternative selectors automatically and prints suggestions. Check console output and update CSS selectors in [src/linkedin_scraper.py](src/linkedin_scraper.py) if needed.
 
-1. **Check your date range:** Verify you applied to jobs during that period
-2. **LinkedIn date format:** LinkedIn shows relative dates ("2 days ago") which are approximations
-3. **Expand the range:** Try a wider date range to see if the parsing is correct
-4. **Check console output:** The script shows which jobs were filtered out and why
-
-### Date Parsing Issues
-
-The script converts LinkedIn's relative dates ("2 weeks ago") to actual dates. If dates seem wrong:
-
-1. Check the console output - it shows the raw date text from LinkedIn
-2. Dates are approximate for anything older than "yesterday"
-3. For precise records, cross-reference with your LinkedIn notifications/emails
-
-### "Could not find job cards" Error
-
-LinkedIn's HTML structure may have changed:
-
-1. The script will attempt alternative selectors automatically
-2. Check console output for suggested selectors
-3. Open an issue with the error message so the script can be updated
-
-### Browser Issues
-
-**ChromeDriver version mismatch:**
+### ChromeDriver version mismatch
 ```bash
 pip install --upgrade webdriver-manager selenium
 ```
 
-**Login timeout:**
-- You have 5 minutes (300 seconds) to log in
-- If you need more time, edit the timeout in `login()` method
+### Login timeout
+You have 5 minutes (300 seconds). To extend it, edit the timeout value in the `login()` method in [src/linkedin_scraper.py](src/linkedin_scraper.py).
 
-**Browser doesn't close:**
-- Press Ctrl+C to force quit
-- Or manually close the browser window
-
-## Quick Reference
-
-### Command Options
-
-| Command | Description |
-|---------|-------------|
-| `make scrape` | 7 days ending today (default) |
-| `make scrape ARGS="--end-date YYYY-MM-DD"` | 7-day window ending on this date |
-| `make scrape ARGS="--start-date YYYY-MM-DD"` | Set start date (end defaults to today) |
-| `make scrape ARGS="--debug"` | Enable detailed logging |
-| `make scrape ARGS="--test-parsing"` | Test date parsing with sample formats |
-| `make report` | Generate chart from all existing reports |
-| `make install` | Install Python dependencies |
-| `make lint` | Run pylint on all Python files |
-| `make test` | Run pytest with coverage |
-| `make build` | Build Docker image |
-
-### File Naming
-
-- Pattern: `Week_Ending_YYYY_MM_DD.txt`
-- Uses the **end date** of the range
-- Zero-padded for correct sorting
-- Example: `Week_Ending_2026_01_31.txt`
-
-### Date Format
-
-- Input: `YYYY-MM-DD` (e.g., 2026-01-25)
-- Output in file: `YYYY-MM-DD, applied to ...`
-
-## Tips for Unemployment Claims
-
-1. **Weekly Reports:** Run the scraper with weekly date ranges (e.g., Sunday to Saturday)
-2. **Consistent Naming:** The zero-padded format ensures files sort chronologically
-3. **Verification:** Cross-check with LinkedIn emails for precise application dates
-4. **Keep Records:** Save these files as proof of job search activity
-5. **Regular Updates:** Run weekly to maintain current records
-6. **Efficient Processing:** The scraper automatically stops when reaching older jobs
-
-## Privacy & Security
-
-- Your credentials are NOT stored by this script
-- You log in manually through the actual LinkedIn website
-- The script only reads publicly visible (to you) job application data
-- No data is sent anywhere except saved locally to your text file
-- Files are created in the same directory where you run the script
+---
 
 ## Advanced Usage
 
-### Programmatic Usage
-
-You can also import and use the scraper in your own Python scripts:
+### Programmatic import
 
 ```python
-from linkedin_scraper import LinkedInJobScraper
+from src.linkedin_scraper import LinkedInJobScraper
 
-# Create scraper with date range
 scraper = LinkedInJobScraper(
     start_date="2026-01-25",
     end_date="2026-01-31"
 )
-
-# Run the scraper
 scraper.run()
-
-# Output will be: Week_Ending_2026_01_31.txt
+# Output: reports/Week_Ending_2026_01_31.txt
 ```
 
-### Custom Date Ranges
-
-For non-weekly ranges (e.g., monthly unemployment claims):
+### Monthly ranges
 
 ```bash
-# January 2026
-python linkedin_scraper.py --start-date 2026-01-01 --end-date 2026-01-31
-
-# Output: Week_Ending_2026_01_31.txt (despite being a month, not a week)
+make scrape ARGS="--start-date 2026-01-01 --end-date 2026-01-31"
+# Output: reports/Week_Ending_2026_01_31.txt
 ```
+
+---
+
+## CI/CD
+
+On every push to `main`:
+- **CI/CD workflow** — runs `make install`, `make lint`, `make test`
+- **Docker Image workflow** — builds and pushes image to `ghcr.io/jgalloway42/linkedin-applied-job-scrapper:latest`
+
+---
 
 ## Privacy & Security
 
-- Your credentials are NOT stored by this script
-- You log in manually through the actual LinkedIn website
-- The script only reads publicly visible (to you) job application data
-- No data is sent anywhere except saved locally to your text file
+- Credentials are **never stored** — you log in manually through LinkedIn's own login page
+- The script only reads job application data visible to your own account
+- No data is sent anywhere; all output is saved locally in `reports/`
+- `reports/` is gitignored — your job search history never touches the repo
 
-## Support
-
-If LinkedIn changes their page structure:
-1. Check the console output for specific error messages
-2. Inspect the page elements manually
-3. Update the CSS selectors in the script accordingly
+---
 
 ## License
 
-This script is provided as-is for personal use. Use responsibly and in accordance with LinkedIn's Terms of Service.
+Provided as-is for personal use. Use responsibly and in accordance with LinkedIn's Terms of Service.
