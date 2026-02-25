@@ -53,7 +53,7 @@ class LinkedInJobScraper:
             
         # Generate output filename using the end date (latest day of range)
         # Create reports directory in project root if it doesn't exist
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         reports_dir = os.path.join(project_root, "reports")
         os.makedirs(reports_dir, exist_ok=True)
 

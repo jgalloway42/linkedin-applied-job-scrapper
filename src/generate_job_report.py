@@ -191,7 +191,7 @@ def main():
     """Main execution flow"""
     # Get project root directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(os.path.dirname(script_dir))
+    project_root = os.path.dirname(script_dir)
 
     # Define directories
     reports_dir = os.path.join(project_root, "reports")

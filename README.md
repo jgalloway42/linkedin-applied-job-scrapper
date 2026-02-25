@@ -27,12 +27,13 @@ A Python script to extract your LinkedIn job applications and save them in a str
 
 1. **Install Python dependencies:**
    ```bash
-   pip install -r requirements.txt
+   make install
    ```
 
 2. **Verify Chrome is installed:**
    - The script uses Chrome WebDriver
    - Make sure Google Chrome is installed on your system
+   - Or use the provided Docker image: `make build`
 
 ## Usage
 
@@ -40,22 +41,22 @@ A Python script to extract your LinkedIn job applications and save them in a str
 
 **With specific date range:**
 ```bash
-python linkedin_scraper.py --start-date 2026-01-25 --end-date 2026-01-31
+make scrape ARGS="--start-date 2026-01-25 --end-date 2026-01-31"
 ```
 
 **End date only — start date auto-calculated as 7 days prior (inclusive):**
 ```bash
-python linkedin_scraper.py --end-date 2026-02-21
+make scrape ARGS="--end-date 2026-02-21"
 ```
 
 **Start date only — end date defaults to today:**
 ```bash
-python linkedin_scraper.py --start-date 2026-01-25
+make scrape ARGS="--start-date 2026-01-25"
 ```
 
 **No arguments (defaults to 7 days ending today):**
 ```bash
-python linkedin_scraper.py
+make scrape
 ```
 
 ### How It Works
@@ -86,21 +87,21 @@ python linkedin_scraper.py
 
 ### Example 1: Last Week's Applications
 ```bash
-python linkedin_scraper.py --start-date 2026-01-25 --end-date 2026-01-31
+make scrape ARGS="--start-date 2026-01-25 --end-date 2026-01-31"
 ```
-Output: `Week_Ending_2026_01_31.txt`
+Output: `reports/Week_Ending_2026_01_31.txt`
 
 ### Example 2: Specific Week by End Date
 ```bash
-python linkedin_scraper.py --end-date 2026-02-21
+make scrape ARGS="--end-date 2026-02-21"
 ```
-Output: `Week_Ending_2026_02_21.txt` (scrapes Feb 15–Feb 21 inclusive)
+Output: `reports/Week_Ending_2026_02_21.txt` (scrapes Feb 15–Feb 21 inclusive)
 
 ### Example 3: Last 7 Days (Default)
 ```bash
-python linkedin_scraper.py
+make scrape
 ```
-Output: `Week_Ending_YYYY_MM_DD.txt` (using today as end date)
+Output: `reports/Week_Ending_YYYY_MM_DD.txt` (using today as end date)
 
 ## File Naming Convention
 
@@ -180,11 +181,16 @@ pip install --upgrade webdriver-manager selenium
 
 | Command | Description |
 |---------|-------------|
-| `python linkedin_scraper.py` | 7 days ending today (default) |
-| `--end-date YYYY-MM-DD` | 7-day window ending on this date (start auto-calculated) |
-| `--start-date YYYY-MM-DD` | Set start date (end defaults to today) |
-| `--debug` | Enable detailed logging |
-| `--test-parsing` | Test date parsing with sample formats |
+| `make scrape` | 7 days ending today (default) |
+| `make scrape ARGS="--end-date YYYY-MM-DD"` | 7-day window ending on this date |
+| `make scrape ARGS="--start-date YYYY-MM-DD"` | Set start date (end defaults to today) |
+| `make scrape ARGS="--debug"` | Enable detailed logging |
+| `make scrape ARGS="--test-parsing"` | Test date parsing with sample formats |
+| `make report` | Generate chart from all existing reports |
+| `make install` | Install Python dependencies |
+| `make lint` | Run pylint on all Python files |
+| `make test` | Run pytest with coverage |
+| `make build` | Build Docker image |
 
 ### File Naming
 
