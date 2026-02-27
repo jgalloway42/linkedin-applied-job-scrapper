@@ -3,12 +3,10 @@ LinkedIn Job Application Report Generator
 Reads all Week_Ending_*.txt files from the reports directory and generates a cumulative bar chart.
 
 Usage:
-    conda activate LISCRAPE
     python generate_job_report.py
 
 Requirements:
-    - Conda environment: LISCRAPE
-    - matplotlib package
+    - matplotlib (pip install -r requirements.txt)
 """
 
 import os
@@ -168,24 +166,6 @@ def generate_cumulative_chart(reports_dir, output_dir):
     plt.close()
 
 
-def check_conda_environment():
-    """Check if running in the correct conda environment"""
-    conda_env = os.environ.get('CONDA_DEFAULT_ENV', None)
-
-    if conda_env != 'LISCRAPE':
-        print("\n" + "!"*60)
-        print("WARNING: Not running in LISCRAPE conda environment")
-        print("!"*60)
-        print(f"Current environment: {conda_env if conda_env else 'None (base or no conda)'}")
-        print("\nPlease activate the LISCRAPE environment:")
-        print("  conda activate LISCRAPE")
-        print("\nContinuing anyway, but you may encounter missing dependencies...")
-        print("!"*60 + "\n")
-        input("Press Enter to continue or Ctrl+C to exit...")
-    else:
-        print(f"✓ Running in conda environment: {conda_env}")
-
-
 def main():
     """Main execution flow"""
     # Get project root directory
@@ -199,9 +179,6 @@ def main():
     print("\n" + "="*60)
     print("LinkedIn Job Application Report Generator")
     print("="*60)
-
-    # Check conda environment
-    check_conda_environment()
 
     print(f"Reports directory: {reports_dir}")
     print(f"Output directory: {figures_dir}")

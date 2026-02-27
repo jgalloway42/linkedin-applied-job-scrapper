@@ -3,20 +3,18 @@ LinkedIn Job Application Scraper with Date Range Filtering
 Extracts jobs you've applied to from LinkedIn and saves them with proper naming convention.
 
 Usage:
-    conda activate LISCRAPE
     python linkedin_scraper.py --start-date 2026-01-25 --end-date 2026-01-31
     python linkedin_scraper.py --start-date 2026-01-25  # End date defaults to today
 
 Requirements:
-    - Conda environment: LISCRAPE
-    - selenium, Chrome WebDriver
+    - selenium, Chrome WebDriver (pip install -r requirements.txt)
 """
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 from datetime import datetime, timedelta
 import time
 import re
@@ -107,103 +105,6 @@ class LinkedInJobScraper:
         self.driver.get("https://www.linkedin.com/my-items/saved-jobs/?cardType=APPLIED")
         time.sleep(3)
         
-    def scroll_to_load_all_jobs(self):
-        """Load jobs via scrolling and pagination until we reach jobs older than our date range"""
-        print(f"\nLoading jobs until we reach dates before {self.start_date.strftime('%Y-%m-%d')}...")
-
-        page = 1
-        max_pages = 100  # Safety limit
-
-        while page <= max_pages:
-            # Scroll to bottom of current page to ensure all content is loaded
-            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(2)
-
-            # Get all current job cards ON THIS PAGE
-            try:
-                job_cards = self.driver.find_elements(By.XPATH, "//li[.//div[@data-chameleon-result-urn]]")
-            except Exception:  # pylint: disable=broad-exception-caught
-                job_cards = self.driver.find_elements(By.CSS_SELECTOR, "li")
-
-            current_cards = len(job_cards)
-            print(f"  Page {page}: Found {current_cards} jobs on current view")
-
-            # Check ALL jobs on current page to see if we should stop
-            # Stop if ANY job on this page is older than our start date
-            should_stop = False
-            checked_jobs = 0
-            old_jobs_on_page = 0
-            failed_extractions = 0
-
-            for card in job_cards:
-                try:
-                    date_text, _ = self._extract_date_text(card)
-                    if date_text:
-                        parsed_date = self.parse_linkedin_date(date_text)
-                        if parsed_date:
-                            checked_jobs += 1
-                            # Check if this job is older than our start date
-                            if parsed_date < self.start_date.replace(hour=0, minute=0, second=0, microsecond=0):
-                                old_jobs_on_page += 1
-                        else:
-                            failed_extractions += 1
-                    else:
-                        failed_extractions += 1
-                except Exception:  # pylint: disable=broad-exception-caught
-                    failed_extractions += 1
-                    continue
-
-            print(f"    Checked {checked_jobs} dates: {old_jobs_on_page} old, {checked_jobs - old_jobs_on_page} in range, {failed_extractions} failed")
-
-            # If we checked at least 5 jobs and more than half are too old, stop
-            if checked_jobs >= 5 and old_jobs_on_page > checked_jobs / 2:
-                print(f"  Found {old_jobs_on_page}/{checked_jobs} jobs older than {self.start_date.strftime('%Y-%m-%d')} on this page - stopping")
-                should_stop = True
-
-            if should_stop:
-                break
-
-            # Look for "Next" pagination button
-            next_button = None
-            next_button_selectors = [
-                "button[aria-label='View next page']",
-                "button[aria-label='Next']",
-                "button.artdeco-pagination__button--next",
-                "li.artdeco-pagination__indicator--number.active + li button",
-            ]
-
-            for selector in next_button_selectors:
-                try:
-                    buttons = self.driver.find_elements(By.CSS_SELECTOR, selector)
-                    for btn in buttons:
-                        if btn.is_displayed() and btn.is_enabled():
-                            next_button = btn
-                            break
-                    if next_button:
-                        break
-                except Exception:  # pylint: disable=broad-exception-caught
-                    continue
-
-            # If we found a next button, click it
-            if next_button:
-                try:
-                    # Scroll the button into view
-                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", next_button)
-                    time.sleep(1)
-                    next_button.click()
-                    print(f"  Clicking 'Next' to load page {page + 1}...")
-                    time.sleep(3)  # Wait for page to load
-                    page += 1
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"  Could not click next button: {str(e)}")
-                    break
-            else:
-                # No next button found - we've reached the end
-                print("  No more pages available")
-                break
-
-        print(f"✓ Finished loading jobs across {page} page(s)")
-
     def scroll_and_extract_all_jobs(self):
         """Load jobs via pagination and extract from each page until we reach jobs older than our date range"""
         print(f"\nLoading and extracting jobs until we reach dates before {self.start_date.strftime('%Y-%m-%d')}...")
@@ -644,181 +545,6 @@ class LinkedInJobScraper:
 
         return None, error_msg
 
-    def extract_jobs(self):
-        """Extract job application data from the page"""
-        print("\nExtracting job data...")
-        all_jobs = []
-        filtered_jobs = []
-        
-        try:
-            # Wait for job cards to load - try multiple selectors
-            selectors_to_try = [
-                "li.reusable-search__result-container",  # Old selector
-                "li div[data-chameleon-result-urn]",      # New selector - uses data attribute
-                "div.entity-result__insights",             # Fallback - date container
-            ]
-
-            job_cards = []
-            for selector in selectors_to_try:
-                try:
-                    WebDriverWait(self.driver, 5).until(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
-                    )
-                    if "data-chameleon-result-urn" in selector:
-                        # Find parent <li> elements
-                        job_cards = self.driver.find_elements(By.XPATH, "//li[.//div[@data-chameleon-result-urn]]")
-                    else:
-                        job_cards = self.driver.find_elements(By.CSS_SELECTOR, selector)
-
-                    if len(job_cards) > 0:
-                        print(f"Found {len(job_cards)} total job applications using selector: {selector}")
-                        break
-                except TimeoutException:
-                    continue
-
-            if len(job_cards) == 0:
-                raise TimeoutException("Could not find job cards with any selector")
-            
-            for idx, card in enumerate(job_cards, 1):
-                try:
-                    # Extract job title - try multiple strategies
-                    job_title = None
-                    title_selectors = [
-                        "a[href*='/jobs/view/']",  # Any link to a job posting
-                        "a[data-test-app-aware-link]",  # 2026 structure
-                        "span.entity-result__title-text a",  # Legacy
-                    ]
-                    for selector in title_selectors:
-                        try:
-                            title_elements = card.find_elements(By.CSS_SELECTOR, selector)
-                            for elem in title_elements:
-                                text = elem.text.strip()
-                                # Clean up the title: remove newlines and ", Verified" badges
-                                text = text.replace('\n', ' ').replace(', Verified', '').strip()
-                                if text and len(text) > 3:  # Skip empty or very short text
-                                    job_title = text
-                                    break
-                            if job_title:
-                                break
-                        except NoSuchElementException:
-                            continue
-
-                    if not job_title:
-                        if self.debug_mode:
-                            print(f"  [WARNING] Could not extract job title for card {idx}")
-                            # Print all links to help debug
-                            try:
-                                all_links = card.find_elements(By.TAG_NAME, "a")
-                                print(f"    Found {len(all_links)} links in card")
-                                for link in all_links[:3]:
-                                    print(f"      Link text: '{link.text[:50]}'")
-                            except Exception:  # pylint: disable=broad-exception-caught
-                                pass
-                        continue
-
-                    # Extract company name - try multiple selectors
-                    company_name = None
-                    company_selectors = [
-                        "div.t-14.t-black.t-normal",  # 2026 structure - first div with these classes
-                        "span.entity-result__primary-subtitle",  # Legacy
-                    ]
-                    for selector in company_selectors:
-                        try:
-                            company_elements = card.find_elements(By.CSS_SELECTOR, selector)
-                            for elem in company_elements:
-                                text = elem.text.strip()
-                                # Company name should not contain "Remote", "United States", etc.
-                                if text and len(text) > 1 and "remote" not in text.lower() and "united states" not in text.lower():
-                                    company_name = text
-                                    break
-                            if company_name:
-                                break
-                        except NoSuchElementException:
-                            continue
-
-                    if not company_name:
-                        company_name = "Unknown Company"
-
-                    # Extract application date with new robust method
-                    date_text, date_error = self._extract_date_text(card)
-
-                    if date_error and self.debug_mode:
-                        print(f"  [WARNING] {date_error} for card {idx}: {company_name} - {job_title}")
-
-                    # Parse the date with validation
-                    application_datetime = self.parse_linkedin_date(date_text)
-
-                    # Validate the parsed date
-                    if application_datetime and not self._validate_parsed_date(application_datetime, date_text):
-                        if self.debug_mode:
-                            print(f"  [VALIDATION FAILED] Skipping job {idx} due to invalid date")
-                        continue
-
-                    # Log the date parsing
-                    self._log_date_parsing(date_text, application_datetime, job_title, company_name)
-
-                    # Store all jobs (even with failed dates for debugging)
-                    job_data = {
-                        'date': application_datetime,
-                        'date_str': application_datetime.strftime("%Y-%m-%d") if application_datetime else 'UNKNOWN',
-                        'company': company_name,
-                        'title': job_title,
-                        'raw_date_text': date_text,
-                        'date_error': date_error
-                    }
-                    all_jobs.append(job_data)
-
-                    # Filter by date range (only if we have a valid date)
-                    if application_datetime and self.is_date_in_range(application_datetime):
-                        filtered_jobs.append(job_data)
-                        print(f"  ✓ {job_data['date_str']} - {company_name} - {job_title}")
-                    else:
-                        reason = "no date" if not application_datetime else "outside range"
-                        print(f"  ✗ {job_data['date_str']} - {company_name} - {job_title} ({reason})")
-                        if self.debug_mode and date_text:
-                            print(f"      Raw date: '{date_text}'")
-
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"  Warning: Could not extract data from card {idx}: {str(e)}")
-                    if self.debug_mode:
-                        import traceback
-                        traceback.print_exc()
-                    continue
-                    
-        except TimeoutException:
-            print("✗ Could not find job cards. The page structure may have changed.")
-            print("\nTrying alternative selectors...")
-            self._try_alternative_selectors()
-
-        # Print date parsing summary
-        self._print_date_parsing_summary()
-
-        print(f"\n✓ Found {len(all_jobs)} total applications")
-        print(f"✓ {len(filtered_jobs)} applications in date range")
-
-        return filtered_jobs
-        
-    def _try_alternative_selectors(self):
-        """Try alternative CSS selectors if the main ones don't work"""
-        alternative_selectors = [
-            "div.jobs-search-results__list-item",
-            "li.job-card-container",
-            "div.scaffold-layout__list-item",
-            "li[class*='reusable-search']",
-        ]
-        
-        for selector in alternative_selectors:
-            try:
-                elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
-                if len(elements) > 0:
-                    print(f"\n  Found {len(elements)} elements with selector: {selector}")
-                    print("  Please update the code to use this selector")
-                    # Print first element's HTML for inspection
-                    if elements:
-                        print(f"\n  First element classes: {elements[0].get_attribute('class')}")
-            except Exception:  # pylint: disable=broad-exception-caught
-                continue
-        
     def save_to_file(self, jobs):
         """Save jobs to file in the specified format"""
         if not jobs:
@@ -915,28 +641,7 @@ def test_date_parsing():
     print("="*60)
 
 
-def check_conda_environment():
-    """Check if running in the correct conda environment"""
-    conda_env = os.environ.get('CONDA_DEFAULT_ENV', None)
-
-    if conda_env != 'LISCRAPE':
-        print("\n" + "!"*60)
-        print("WARNING: Not running in LISCRAPE conda environment")
-        print("!"*60)
-        print(f"Current environment: {conda_env if conda_env else 'None (base or no conda)'}")
-        print("\nPlease activate the LISCRAPE environment:")
-        print("  conda activate LISCRAPE")
-        print("\nContinuing anyway, but you may encounter missing dependencies...")
-        print("!"*60 + "\n")
-        input("Press Enter to continue or Ctrl+C to exit...")
-    else:
-        print(f"✓ Running in conda environment: {conda_env}\n")
-
-
 def main():
-    # Check conda environment first
-    check_conda_environment()
-
     parser = argparse.ArgumentParser(
         description='Scrape LinkedIn job applications within a date range',
         formatter_class=argparse.RawDescriptionHelpFormatter,

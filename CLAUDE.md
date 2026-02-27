@@ -1,19 +1,15 @@
 # Claude Code Project Guide
 
 ## Project Overview
-LinkedIn Job Application Scraper - A tool to extract and track job applications from LinkedIn for unemployment records and personal tracking.
+LinkedIn Job Application Scraper - A tool to extract and track job applications from LinkedIn for unemployment records and personal tracking. Runs locally with conda.
 
 ## Project Structure
 
 ```
 linkedin-applied-job-scrapper/
-├── .devcontainer/
-│   ├── devcontainer.json        # GitHub Codespaces config
-│   └── Dockerfile               # Container image (Python 3.11 + Chrome)
 ├── .github/
 │   └── workflows/
-│       ├── cicd.yml             # Lint + test on push/PR
-│       └── docker-image.yml     # Build & push image to GHCR on push to main
+│       └── cicd.yml             # Lint + test on push/PR
 ├── src/
 │   ├── __init__.py
 │   ├── linkedin_scraper.py      # Main scraper script
@@ -38,8 +34,6 @@ make lint            # Pylint on all Python files
 make test            # Run pytest with coverage
 make format          # Black formatter
 make refactor        # format + lint
-make build           # Build Docker image
-make container-lint  # Lint the Dockerfile with hadolint
 
 # Run the scraper (opens Chrome for manual login)
 make scrape ARGS="--start-date 2026-02-17 --end-date 2026-02-23"
@@ -130,7 +124,6 @@ make report
 ## GitHub Actions
 
 - **cicd.yml**: Runs `make install && make lint && make test` on every push/PR to main
-- **docker-image.yml**: Builds and pushes Docker image to GHCR (`ghcr.io/<your-repo>:latest`) on push to main
 
 ## Important Reminders
 
