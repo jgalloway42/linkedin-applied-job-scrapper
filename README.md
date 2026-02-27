@@ -2,6 +2,8 @@
 
 # LinkedIn Applied Job Scraper
 
+> **Note (February 2026):** LinkedIn changed the format of their applied jobs page. Application dates are no longer displayed, and the page structure no longer matches the selectors this scraper relied on. As a result, **the scraper no longer works**. This was a known risk of scraping a third-party site. The code is preserved here for reference but is not currently functional.
+
 Extracts your job applications from LinkedIn and tracks them by week. Generates text reports for unemployment records and a cumulative bar chart for personal tracking.
 
 ---

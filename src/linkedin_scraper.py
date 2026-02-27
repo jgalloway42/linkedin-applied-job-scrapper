@@ -105,6 +105,35 @@ class LinkedInJobScraper:
         self.driver.get("https://www.linkedin.com/my-items/saved-jobs/?cardType=APPLIED")
         time.sleep(3)
         
+    def _dump_debug_info(self):
+        """Dump page HTML and diagnostic selectors when no cards are found"""
+        print(f"\n[DEBUG] Current URL: {self.driver.current_url}")
+        print(f"[DEBUG] Page title:   {self.driver.title}")
+
+        debug_path = os.path.join(os.path.dirname(self.output_file), "debug_page.html")
+        with open(debug_path, 'w', encoding='utf-8') as f:
+            f.write(self.driver.page_source)
+        print(f"[DEBUG] Full page source saved to: {debug_path}")
+
+        # Probe common structural elements to understand what changed
+        probes = [
+            ("li elements total",           By.CSS_SELECTOR, "li"),
+            ("ul elements total",           By.CSS_SELECTOR, "ul"),
+            ("Any /jobs/view/ links",        By.CSS_SELECTOR, "a[href*='/jobs/view/']"),
+            ("data-chameleon-result-urn",   By.XPATH,        "//*[@data-chameleon-result-urn]"),
+            ("Any 'Applied' text nodes",    By.XPATH,        "//*[contains(text(),'Applied')]"),
+            ("entity-result containers",    By.CSS_SELECTOR, ".entity-result"),
+            ("job-card containers",         By.CSS_SELECTOR, "[class*='job-card']"),
+            ("scaffold-layout__list items", By.CSS_SELECTOR, ".scaffold-layout__list li"),
+        ]
+        print("\n[DEBUG] Element probe results:")
+        for label, by, selector in probes:
+            try:
+                count = len(self.driver.find_elements(by, selector))
+                print(f"  {label}: {count}")
+            except Exception:  # pylint: disable=broad-exception-caught
+                print(f"  {label}: ERROR")
+
     def scroll_and_extract_all_jobs(self):
         """Load jobs via pagination and extract from each page until we reach jobs older than our date range"""
         print(f"\nLoading and extracting jobs until we reach dates before {self.start_date.strftime('%Y-%m-%d')}...")
@@ -126,6 +155,10 @@ class LinkedInJobScraper:
 
             current_cards = len(job_cards)
             print(f"\n  Page {page}: Found {current_cards} jobs")
+
+            if current_cards == 0:
+                self._dump_debug_info()
+                break
 
             # Extract jobs from current page
             page_jobs = []
