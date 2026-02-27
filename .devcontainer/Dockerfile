@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y wget gnupg ca-certificates \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
        > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update && apt-get install -y google-chrome-stable \
+    && apt-get update && apt-get install -y make \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the virtual display so Chrome knows where to render
