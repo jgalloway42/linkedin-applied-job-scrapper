@@ -1,3 +1,4 @@
+[![CI/CD](https://github.com/jgalloway42/linkedin-applied-job-scrapper/actions/workflows/cicd.yml/badge.svg)](https://github.com/jgalloway42/linkedin-applied-job-scrapper/actions/workflows/cicd.yml)
 # LinkedIn Job Application Scraper
 
 Extract and track your LinkedIn job applications for unemployment records and personal tracking — with automatic date range filtering, smart pagination, and weekly report generation.
