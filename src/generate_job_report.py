@@ -12,7 +12,6 @@ Requirements:
 """
 
 import os
-import sys
 import glob
 from datetime import datetime
 import re
@@ -61,7 +60,7 @@ def count_jobs_in_file(filepath):
             lines = f.readlines()
             # Count non-empty lines
             return len([line for line in lines if line.strip()])
-    except Exception as e:
+    except OSError as e:
         print(f"Error reading {filepath}: {str(e)}")
         return 0
 
@@ -108,7 +107,7 @@ def generate_cumulative_chart(reports_dir, output_dir):
     counts = [d['job_count'] for d in data]
 
     # Create the bar chart
-    fig, ax = plt.subplots(figsize=(12, 6))
+    _, ax = plt.subplots(figsize=(12, 6))
 
     # Create bars
     bars = ax.bar(weeks, counts, width=5, color='#0077B5', edgecolor='black', linewidth=1.2)
@@ -153,7 +152,7 @@ def generate_cumulative_chart(reports_dir, output_dir):
     total_jobs = sum(counts)
     avg_jobs = total_jobs / len(counts) if counts else 0
     print(f"\n{'='*60}")
-    print(f"SUMMARY STATISTICS")
+    print("SUMMARY STATISTICS")
     print(f"{'='*60}")
     print(f"Total weeks tracked: {len(weeks)}")
     print(f"Total job applications: {total_jobs}")

@@ -35,6 +35,7 @@ class LinkedInJobScraper:
         """
         self.driver = None
         self.debug_mode = debug_mode
+        self._date_log = []
         
         # Parse end_date first so start_date can default relative to it
         if isinstance(end_date, str):
@@ -121,7 +122,7 @@ class LinkedInJobScraper:
             # Get all current job cards ON THIS PAGE
             try:
                 job_cards = self.driver.find_elements(By.XPATH, "//li[.//div[@data-chameleon-result-urn]]")
-            except:
+            except Exception:  # pylint: disable=broad-exception-caught
                 job_cards = self.driver.find_elements(By.CSS_SELECTOR, "li")
 
             current_cards = len(job_cards)
@@ -148,7 +149,7 @@ class LinkedInJobScraper:
                             failed_extractions += 1
                     else:
                         failed_extractions += 1
-                except:
+                except Exception:  # pylint: disable=broad-exception-caught
                     failed_extractions += 1
                     continue
 
@@ -180,7 +181,7 @@ class LinkedInJobScraper:
                             break
                     if next_button:
                         break
-                except:
+                except Exception:  # pylint: disable=broad-exception-caught
                     continue
 
             # If we found a next button, click it
@@ -193,7 +194,7 @@ class LinkedInJobScraper:
                     print(f"  Clicking 'Next' to load page {page + 1}...")
                     time.sleep(3)  # Wait for page to load
                     page += 1
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"  Could not click next button: {str(e)}")
                     break
             else:
@@ -219,7 +220,7 @@ class LinkedInJobScraper:
             # Get all current job cards ON THIS PAGE
             try:
                 job_cards = self.driver.find_elements(By.XPATH, "//li[.//div[@data-chameleon-result-urn]]")
-            except:
+            except Exception:  # pylint: disable=broad-exception-caught
                 job_cards = self.driver.find_elements(By.CSS_SELECTOR, "li")
 
             current_cards = len(job_cards)
@@ -251,7 +252,7 @@ class LinkedInJobScraper:
                                     break
                             if job_title:
                                 break
-                        except:
+                        except Exception:  # pylint: disable=broad-exception-caught
                             continue
 
                     if not job_title:
@@ -273,7 +274,7 @@ class LinkedInJobScraper:
                                     break
                             if company_name:
                                 break
-                        except:
+                        except Exception:  # pylint: disable=broad-exception-caught
                             continue
 
                     if not company_name:
@@ -314,7 +315,7 @@ class LinkedInJobScraper:
                         reason = "no date" if not application_datetime else "outside range"
                         print(f"    ✗ {job_data['date_str']} - {company_name} - {job_title} ({reason})")
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     if self.debug_mode:
                         print(f"    Warning: Could not extract data from card {idx}: {str(e)}")
                     continue
@@ -351,7 +352,7 @@ class LinkedInJobScraper:
                             break
                     if next_button:
                         break
-                except:
+                except Exception:  # pylint: disable=broad-exception-caught
                     continue
 
             # If we found a next button, click it
@@ -363,7 +364,7 @@ class LinkedInJobScraper:
                     print(f"    Clicking 'Next' to load page {page + 1}...")
                     time.sleep(3)
                     page += 1
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"    Could not click next button: {str(e)}")
                     break
             else:
@@ -542,8 +543,6 @@ class LinkedInJobScraper:
             print(f"[DATE PARSE] Raw: '{raw_text}' → {log_entry['parsed_date']} | In range: {log_entry['in_range']}")
 
         # Store for later analysis
-        if not hasattr(self, '_date_log'):
-            self._date_log = []
         self._date_log.append(log_entry)
 
     def _print_date_parsing_summary(self):
@@ -632,7 +631,7 @@ class LinkedInJobScraper:
                         if self.debug_mode:
                             print(f"  [SUCCESS] Found date via '{strategy['name']}': '{text}'")
                         return text, None
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 if self.debug_mode:
                     print(f"  [FAILED] Strategy '{strategy['name']}': {str(e)}")
                 continue
@@ -713,7 +712,7 @@ class LinkedInJobScraper:
                                 print(f"    Found {len(all_links)} links in card")
                                 for link in all_links[:3]:
                                     print(f"      Link text: '{link.text[:50]}'")
-                            except:
+                            except Exception:  # pylint: disable=broad-exception-caught
                                 pass
                         continue
 
@@ -779,7 +778,7 @@ class LinkedInJobScraper:
                         if self.debug_mode and date_text:
                             print(f"      Raw date: '{date_text}'")
 
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     print(f"  Warning: Could not extract data from card {idx}: {str(e)}")
                     if self.debug_mode:
                         import traceback
@@ -813,11 +812,11 @@ class LinkedInJobScraper:
                 elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
                 if len(elements) > 0:
                     print(f"\n  Found {len(elements)} elements with selector: {selector}")
-                    print(f"  Please update the code to use this selector")
+                    print("  Please update the code to use this selector")
                     # Print first element's HTML for inspection
                     if elements:
                         print(f"\n  First element classes: {elements[0].get_attribute('class')}")
-            except Exception as e:
+            except Exception:  # pylint: disable=broad-exception-caught
                 continue
         
     def save_to_file(self, jobs):
@@ -852,7 +851,7 @@ class LinkedInJobScraper:
         except KeyboardInterrupt:
             print("\n\n✗ Scraping interrupted by user.")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"\n✗ Error: {str(e)}")
             import traceback
             traceback.print_exc()
